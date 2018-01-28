@@ -1,0 +1,3 @@
+[submodule "probation"]
+	path = probation
+	url = git@github.com:propensive/probation.git

@@ -9,6 +9,9 @@ lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .settings(buildSettings: _*)
   .settings(publishSettings: _*)
   .settings(scalaMacroDependencies: _*)
+  .settings(
+    libraryDependencies += "com.propensive" %% "magnolia" % "0.7.1"
+  )
   .settings(moduleName := "contextual")
   .nativeSettings(nativeSettings)
 
@@ -49,7 +52,7 @@ lazy val buildSettings = Seq(
   organization := "com.propensive",
   scalaVersion := "2.12.4",
   name := "contextual",
-  version := "1.1.0",
+  version := "2.0.0",
   scalacOptions ++= Seq("-deprecation", "-feature", "-Ywarn-value-discard", "-Ywarn-dead-code", "-Ywarn-nullary-unit", "-Ywarn-numeric-widen", "-Ywarn-inaccessible", "-Ywarn-adapted-args"),
   crossScalaVersions := Seq("2.11.11", "2.12.4"),
   scmInfo := Some(ScmInfo(url("https://github.com/propensive/contextual"),

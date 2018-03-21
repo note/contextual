@@ -10,7 +10,7 @@ import scalac._
 import xpath._
 import txt._
 
-import estrapade._
+import probation._
 
 object Tests extends TestApp {
 

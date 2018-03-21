@@ -15,6 +15,9 @@
 package contextual
 
 import scala.reflect._, macros.whitebox
+import magnolia._
+
+import language.experimental.macros
 
 /** Macro bundle class containing the main macro providing Contextual's functionality. */
 object Macros {
@@ -101,3 +104,78 @@ object Macros {
     interpolator.evaluator(contexts, interpolation)
   }
 }
+
+
+object Construct {
+
+  type Typeclass[T] = Construct[T]
+
+  def dispatch[T](sealedTrait: SealedTrait[Construct, T]): Construct[T] = new Construct[T] {
+    def make(c: whitebox.Context)(value: T): c.Tree =
+      sealedTrait.dispatch(value) { subtype: Subtype[Construct, T] =>
+        subtype.typeclass.make(c)(subtype.cast(value))
+      }
+  }
+
+  def combine[T](caseClass: CaseClass[Construct, T]): Construct[T] = new Construct[T] {
+    def make(c: whitebox.Context)(value: T): c.Tree = {
+      import c.universe._
+      val term = TermName(s"_root_.${caseClass.typeName.full}")
+      val params = caseClass.parameters.map { param: Param[Construct, T] =>
+        param.typeclass.make(c)(param.dereference(value))
+      }
+      q"""$term(..$params)"""
+    }
+  }
+
+  implicit def gen[T]: Construct[T] = macro Magnolia.gen[T]
+
+  implicit val string: Construct[String] = new Construct[String] {
+    def make(c: whitebox.Context)(value: String): c.Tree =
+      c.universe.Literal(c.universe.Constant(value))
+  }
+  
+  implicit val int: Construct[Int] = new Construct[Int] {
+    def make(c: whitebox.Context)(value: Int): c.Tree =
+      c.universe.Literal(c.universe.Constant(value))
+  }
+  
+  implicit val byte: Construct[Byte] = new Construct[Byte] {
+    def make(c: whitebox.Context)(value: Byte): c.Tree =
+      c.universe.Literal(c.universe.Constant(value))
+  }
+  
+  implicit val short: Construct[Short] = new Construct[Short] {
+    def make(c: whitebox.Context)(value: Short): c.Tree =
+      c.universe.Literal(c.universe.Constant(value))
+  }
+  
+  implicit val long: Construct[Long] = new Construct[Long] {
+    def make(c: whitebox.Context)(value: Long): c.Tree =
+      c.universe.Literal(c.universe.Constant(value))
+  }
+  
+  implicit val double: Construct[Double] = new Construct[Double] {
+    def make(c: whitebox.Context)(value: Double): c.Tree =
+      c.universe.Literal(c.universe.Constant(value))
+  }
+  
+  implicit val float: Construct[Float] = new Construct[Float] {
+    def make(c: whitebox.Context)(value: Float): c.Tree =
+      c.universe.Literal(c.universe.Constant(value))
+  }
+  
+  implicit val boolean: Construct[Boolean] = new Construct[Boolean] {
+    def make(c: whitebox.Context)(value: Boolean): c.Tree =
+      c.universe.Literal(c.universe.Constant(value))
+  }
+  
+  implicit val symbol: Construct[Symbol] = new Construct[Symbol] {
+    def make(c: whitebox.Context)(value: Symbol): c.Tree = {
+      import c.universe._
+      q"""_root_.scala.Symbol(${value.name})"""
+    }
+  }
+}
+
+trait Construct[T] { def make(c: whitebox.Context)(value: T): c.Tree }
